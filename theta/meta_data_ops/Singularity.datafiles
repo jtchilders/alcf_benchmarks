@@ -1,5 +1,5 @@
-From: shub
-Bootstrap: jtchilders/singularity_image_recipes:dvs6_py36
+Bootstrap: shub
+From: jtchilders/singularity_image_recipes:dvs6_py36
 
 
 %setup
