@@ -33,12 +33,16 @@ def main():
                        datefmt=logging_datefmt,
                        filename=args.logfilename)
 
+   logger.info('running on path: %s',args.path)
+   logger.info('timeit tests: %s',args.ntimeits)
+
    if not os.path.exists(args.path):
       raise Exception('path does not exist: %s' % args.path)
 
    ########
    ### Measure GLOB speed
    ###########################
+   logger.info('starting globit test')
    def globit(string):
 
       def foo():
@@ -53,6 +57,7 @@ def main():
    #######
    ### Measure os.path.exists speed
    ###############################
+   logger.info('starting existit test')
    filelist = glob.glob(args.path + '/*')
 
    def existit(filelist):
@@ -70,6 +75,7 @@ def main():
    #######
    ### Measure os.path.exists speed
    ###############################
+   logger.info('starting fstatit test')
    def fstatit(string):
       
       def foo():
