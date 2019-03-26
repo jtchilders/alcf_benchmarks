@@ -52,7 +52,7 @@ def main():
    timer = timeit.Timer(globit(args.path + '/*'))
    x = timer.repeat(100,args.ntimeits)
 
-   logger.info('%20s = %10.5f %10.5f %10.5f','globit',np.min(x),np.mean(x),np.max(x))
+   logger.info('%20s = %10.5f \t %10.5f \t %10.5f','globit',np.min(x),np.mean(x),np.max(x))
 
    #######
    ### Measure os.path.exists speed
@@ -70,7 +70,7 @@ def main():
    timer = timeit.Timer(existit(filelist))
    x = timer.repeat(100,args.ntimeits)
 
-   logger.info('%20s = %10.5f %10.5f %10.5f','existit',np.min(x),np.mean(x),np.max(x))
+   logger.info('%20s = %10.5f \t %10.5f \t %10.5f','existit',np.min(x),np.mean(x),np.max(x))
 
    #######
    ### Measure os.path.exists speed
@@ -88,7 +88,7 @@ def main():
    timer = timeit.Timer(fstatit(filelist))
    x = timer.repeat(100,args.ntimeits)
 
-   logger.info('%20s = %10.5f %10.5f %10.5f','fstatit',np.min(x),np.mean(x),np.max(x))
+   logger.info('%20s = %10.5f \t %10.5f \t %10.5f','fstatit',np.min(x),np.mean(x),np.max(x))
 
 
 
