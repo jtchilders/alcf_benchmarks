@@ -12,7 +12,8 @@ def main():
    
    parser = argparse.ArgumentParser(description='')
    parser.add_argument('-p','--path',dest='path',help='path to files on which to recursively operate.',required=True)
-   parser.add_argument('--ntimeits',dest='ntimeits',help='number times to run the test to measure',default=100,type=int)
+   parser.add_argument('-n','--ntimeits',dest='ntimeits',help='number times to run the test to measure',default=10,type=int)
+   parser.add_argument('-r','--nrepeats',dest='nrepeats',help='number times to repeat the test to measure',default=10,type=int)
 
    parser.add_argument('--debug', dest='debug', default=False, action='store_true', help="Set Logger to DEBUG")
    parser.add_argument('--error', dest='error', default=False, action='store_true', help="Set Logger to ERROR")
@@ -35,6 +36,7 @@ def main():
 
    logger.info('running on path: %s',args.path)
    logger.info('timeit tests: %s',args.ntimeits)
+   logger.info('repeat timit: %s',args.ntimeits)
 
    if not os.path.exists(args.path):
       raise Exception('path does not exist: %s' % args.path)
@@ -43,6 +45,7 @@ def main():
    ### Measure GLOB speed
    ###########################
    logger.info('starting globit test')
+
    def globit(string):
 
       def foo():
@@ -50,9 +53,9 @@ def main():
       return foo
 
    timer = timeit.Timer(globit(args.path + '/*'))
-   x = timer.repeat(100,args.ntimeits)
+   x = timer.repeat(args.nrepeats,args.ntimeits)
 
-   logger.info('%20s = %10.5f \t %10.5f \t %10.5f','globit',np.min(x),np.mean(x),np.max(x))
+   logger.info('%20s = %10.5f %10.5f %10.5f','globit',np.min(x),np.mean(x),np.max(x))
 
    #######
    ### Measure os.path.exists speed
@@ -68,14 +71,15 @@ def main():
       return foo
 
    timer = timeit.Timer(existit(filelist))
-   x = timer.repeat(100,args.ntimeits)
+   x = timer.repeat(args.nrepeats,args.ntimeits)
 
-   logger.info('%20s = %10.5f \t %10.5f \t %10.5f','existit',np.min(x),np.mean(x),np.max(x))
+   logger.info('%20s = %10.5f %10.5f %10.5f','existit',np.min(x),np.mean(x),np.max(x))
 
    #######
    ### Measure os.path.exists speed
    ###############################
    logger.info('starting fstatit test')
+
    def fstatit(string):
       
       def foo():
@@ -86,13 +90,9 @@ def main():
       return foo
 
    timer = timeit.Timer(fstatit(filelist))
-   x = timer.repeat(100,args.ntimeits)
+   x = timer.repeat(args.nrepeats,args.ntimeits)
 
-   logger.info('%20s = %10.5f \t %10.5f \t %10.5f','fstatit',np.min(x),np.mean(x),np.max(x))
-
-
-
-
+   logger.info('%20s = %10.5f %10.5f %10.5f','fstatit',np.min(x),np.mean(x),np.max(x))
 
 
 if __name__ == "__main__":
