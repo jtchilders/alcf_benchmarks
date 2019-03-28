@@ -51,6 +51,7 @@ def main():
    if not os.path.exists(args.path):
       raise Exception('path does not exist: %s' % args.path)
 
+   out_str = ''
    ########
    ### Measure GLOB speed
    ###########################
@@ -69,11 +70,18 @@ def main():
    mean = float(np.mean(x))
    max = float(np.max(x))
 
-   global_min = COMM.reduce(sendobj=min,root=0,op=MPI.MIN)
-   global_mean = COMM.reduce(sendobj=mean,root=0,op=MPI.SUM) / nranks
-   global_max = COMM.reduce(sendobj=max,root=0,op=MPI.MAX)
+   global_min = COMM.allreduce(sendobj=min,op=MPI.MIN)
+   try:
+      global_mean = COMM.allreduce(sendobj=mean,op=MPI.SUM) / nranks
+   except:
+      logger.exception('received exception processing %s', mean)
+      raise
+   global_max = COMM.allreduce(sendobj=max,op=MPI.MAX)
+
+
 
    logger.info('%20s = %10.5f,%10.5f,%10.5f','globit',global_min,global_mean,global_max)
+   out_str += '%s\t%s\t%s\t\t' % (global_min,global_mean,global_max)
 
    #######
    ### Measure os.path.exists speed
@@ -95,11 +103,12 @@ def main():
    mean = float(np.mean(x))
    max = float(np.max(x))
 
-   global_min = COMM.reduce(sendobj=min,root=0,op=MPI.MIN)
-   global_mean = COMM.reduce(sendobj=mean,root=0,op=MPI.SUM) / nranks
-   global_max = COMM.reduce(sendobj=max,root=0,op=MPI.MAX)
+   global_min = COMM.allreduce(sendobj=min,op=MPI.MIN)
+   global_mean = COMM.allreduce(sendobj=mean,op=MPI.SUM) / nranks
+   global_max = COMM.allreduce(sendobj=max,op=MPI.MAX)
 
    logger.info('%20s = %10.5f,%10.5f,%10.5f','existit',global_min,global_mean,global_max)
+   out_str += '%s\t%s\t%s\t\t' % (global_min,global_mean,global_max)
 
    #######
    ### Measure os.path.exists speed
@@ -122,11 +131,15 @@ def main():
    mean = float(np.mean(x))
    max = float(np.max(x))
 
-   global_min = COMM.reduce(sendobj=min,root=0,op=MPI.MIN)
-   global_mean = COMM.reduce(sendobj=mean,root=0,op=MPI.SUM) / nranks
-   global_max = COMM.reduce(sendobj=max,root=0,op=MPI.MAX)
+   global_min = COMM.allreduce(sendobj=min,op=MPI.MIN)
+   global_mean = COMM.allreduce(sendobj=mean,op=MPI.SUM) / nranks
+   global_max = COMM.allreduce(sendobj=max,op=MPI.MAX)
    
    logger.info('%20s = %10.5f,%10.5f,%10.5f','fstatit',global_min,global_mean,global_max)
+   out_str += '%s\t%s\t%s\t\t' % (global_min,global_mean,global_max)
+
+   if rank == 0:
+      print(out_str)
 
 
 if __name__ == "__main__":
