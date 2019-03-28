@@ -1,5 +1,5 @@
 Bootstrap: shub
-From: jtchilders/singularity_image_recipes:dvs6_py36
+From: jtchilders/singularity_image_recipes:dvs6_py36_mpi33
 
 %setup
    mkdir ${SINGULARITY_ROOTFS}/tests/
