@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse,logging,os,timeit,glob
 import numpy as np
+from mpi4py import MPI
 logger = logging.getLogger(__name__)
 
 
@@ -29,11 +30,20 @@ def main():
    elif not args.debug and not args.error and args.warning:
       logging_level = logging.WARNING
 
+   COMM = MPI.COMM_WORLD
+   rank = COMM.Get_rank()
+   nranks = COMM.Get_size()
+   logging_format = '%(asctime)s %(levelname)s:' + '%05d' % rank + ':%(name)s:%(message)s'
+
+   if rank > 0 and logging_level == logging.INFO:
+      logging_level = logging.WARNING
+
    logging.basicConfig(level=logging_level,
                        format=logging_format,
                        datefmt=logging_datefmt,
                        filename=args.logfilename)
 
+   logger.info('rank %s of %s',rank,nranks)
    logger.info('running on path: %s',args.path)
    logger.info('timeit tests: %s',args.ntimeits)
    logger.info('repeat timit: %s',args.ntimeits)
@@ -55,7 +65,15 @@ def main():
    timer = timeit.Timer(globit(args.path + '/*'))
    x = timer.repeat(args.nrepeats,args.ntimeits)
 
-   logger.info('%20s = %10.5f %10.5f %10.5f','globit',np.min(x),np.mean(x),np.max(x))
+   min = float(np.min(x))
+   mean = float(np.mean(x))
+   max = float(np.max(x))
+
+   global_min = COMM.reduce(sendobj=min,root=0,op=MPI.MIN)
+   global_mean = COMM.reduce(sendobj=mean,root=0,op=MPI.SUM) / nranks
+   global_max = COMM.reduce(sendobj=max,root=0,op=MPI.MAX)
+
+   logger.info('%20s = %10.5f,%10.5f,%10.5f','globit',global_min,global_mean,global_max)
 
    #######
    ### Measure os.path.exists speed
@@ -73,7 +91,15 @@ def main():
    timer = timeit.Timer(existit(filelist))
    x = timer.repeat(args.nrepeats,args.ntimeits)
 
-   logger.info('%20s = %10.5f %10.5f %10.5f','existit',np.min(x),np.mean(x),np.max(x))
+   min = float(np.min(x))
+   mean = float(np.mean(x))
+   max = float(np.max(x))
+
+   global_min = COMM.reduce(sendobj=min,root=0,op=MPI.MIN)
+   global_mean = COMM.reduce(sendobj=mean,root=0,op=MPI.SUM) / nranks
+   global_max = COMM.reduce(sendobj=max,root=0,op=MPI.MAX)
+
+   logger.info('%20s = %10.5f,%10.5f,%10.5f','existit',global_min,global_mean,global_max)
 
    #######
    ### Measure os.path.exists speed
@@ -92,7 +118,15 @@ def main():
    timer = timeit.Timer(fstatit(filelist))
    x = timer.repeat(args.nrepeats,args.ntimeits)
 
-   logger.info('%20s = %10.5f %10.5f %10.5f','fstatit',np.min(x),np.mean(x),np.max(x))
+   min = float(np.min(x))
+   mean = float(np.mean(x))
+   max = float(np.max(x))
+
+   global_min = COMM.reduce(sendobj=min,root=0,op=MPI.MIN)
+   global_mean = COMM.reduce(sendobj=mean,root=0,op=MPI.SUM) / nranks
+   global_max = COMM.reduce(sendobj=max,root=0,op=MPI.MAX)
+   
+   logger.info('%20s = %10.5f,%10.5f,%10.5f','fstatit',global_min,global_mean,global_max)
 
 
 if __name__ == "__main__":
