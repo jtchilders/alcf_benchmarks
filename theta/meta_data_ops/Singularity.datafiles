@@ -1,6 +1,7 @@
 Bootstrap: shub
 From: jtchilders/singularity_image_recipes:dvs6_py36_mpi33
 
+
 %setup
    mkdir ${SINGULARITY_ROOTFS}/tests/
    cp create_datafiles.py ${SINGULARITY_ROOTFS}/tests/

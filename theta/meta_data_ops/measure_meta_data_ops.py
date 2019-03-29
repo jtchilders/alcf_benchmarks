@@ -81,7 +81,7 @@ def main():
 
 
    logger.info('%20s = %10.5f,%10.5f,%10.5f','globit',global_min,global_mean,global_max)
-   out_str += '%s\t%s\t%s\t\t' % (global_min,global_mean,global_max)
+   out_str += '%10.5f\t%10.5f\t%10.5f\t\t' % (global_min,global_mean,global_max)
 
    #######
    ### Measure os.path.exists speed
@@ -108,7 +108,7 @@ def main():
    global_max = COMM.allreduce(sendobj=max,op=MPI.MAX)
 
    logger.info('%20s = %10.5f,%10.5f,%10.5f','existit',global_min,global_mean,global_max)
-   out_str += '%s\t%s\t%s\t\t' % (global_min,global_mean,global_max)
+   out_str += '%10.5f\t%10.5f\t%10.5f\t\t' % (global_min,global_mean,global_max)
 
    #######
    ### Measure os.path.exists speed
@@ -136,7 +136,7 @@ def main():
    global_max = COMM.allreduce(sendobj=max,op=MPI.MAX)
    
    logger.info('%20s = %10.5f,%10.5f,%10.5f','fstatit',global_min,global_mean,global_max)
-   out_str += '%s\t%s\t%s\t\t' % (global_min,global_mean,global_max)
+   out_str += '%10.5f\t%10.5f\t%10.5f\t\t' % (global_min,global_mean,global_max)
 
    if rank == 0:
       print(out_str)
