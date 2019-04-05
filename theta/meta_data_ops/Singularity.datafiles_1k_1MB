@@ -1,0 +1,20 @@
+Bootstrap: shub
+From: jtchilders/singularity_image_recipes:dvs6_py36_mpi33
+
+
+%setup
+   mkdir ${SINGULARITY_ROOTFS}/tests/
+   cp create_datafiles.py ${SINGULARITY_ROOTFS}/tests/
+   cp measure_meta_data_ops.py ${SINGULARITY_ROOTFS}/tests/
+
+%post
+   # setup devtoolset6
+   scl enable devtoolset-6 bash
+
+   pip3.6 install numpy
+   
+   cd /tests
+   python3.6 ./create_datafiles.py -p datafiles -n 1000 -b 1048576
+
+%runscript
+   python3.6 /tests/measure_meta_data_ops.py -p /tests/datafiles/

@@ -10,7 +10,7 @@ echo [$SECONDS] nodes x ranks_per_node: $NODES x $RANKS_PER_NODE
 
 env | sort > ${COBALT_JOBID}.env
 
-CONTAINER=/projects/datascience/parton/datafiles.simg
+CONTAINER=/projects/datascience/parton/datafiles_100k_1KB.simg
 EXEC=/home/parton/git/alcf_benchmarks/theta/meta_data_ops/measure_meta_data_ops.py
 
 NTIMEITS=10
@@ -32,7 +32,7 @@ module load miniconda-3.6/conda-4.5.12
 
 echo [$SECONDS] starting test on filesystem
 aprun -n $TOTAL_RANKS -N $RANKS_PER_NODE \
-    $EXEC -p /projects/datascience/parton/metadata_datafiles --ntimeits $NTIMEITS --nrepeats $NREPEATS
+    $EXEC -p /projects/datascience/parton/datafiles_100k_1KB --ntimeits $NTIMEITS --nrepeats $NREPEATS
 
 module unload miniconda-3.6/conda-4.5.12
 
