@@ -1,8 +1,10 @@
 #!/usr/bin/env python
-import argparse,logging,time,sys
+import argparse,logging,time,sys,json
 logger = logging.getLogger(__name__)
 import torch
+import pandas as pd
 import numpy as np
+from ptflops import get_model_complexity_info
 
 
 def main():
@@ -13,6 +15,7 @@ def main():
    
    parser = argparse.ArgumentParser(description='')
    # parser.add_argument('-i','--input',dest='input',help='input',required=True)
+   parser.add_argument('-o','--output_filename',help='output jasn filename',default='test_layers.json')
    parser.add_argument('--debug', dest='debug', default=False, action='store_true', help="Set Logger to DEBUG")
    parser.add_argument('--error', dest='error', default=False, action='store_true', help="Set Logger to ERROR")
    parser.add_argument('--warning', dest='warning', default=False, action='store_true', help="Set Logger to ERROR")
@@ -55,32 +58,39 @@ def main():
    batch_sizes = [16,32,64,128,256,512]
 
    string = ''
-   string += '%s \t' % 'class'
-   string += '%s \t' % 'in_channels'
-   string += '%s \t' % 'out_channels'
-   string += '%s '   % 'kernel_size' + '\t' * len(kernel_sizes[0])
-   string += '%s \t' % 'padding'
-   string += '%s \t' % 'stride'
-   string += '%s \t' % 'bias'
-   string += '%s \t' % 'batch_size'
-   string += '%s '   % 'image_size' + '\t' * len(image_sizes[0])
-   string += '%s \t' % 'precision'
-   string += '%s \t' % 'min'
-   string += '%s \t' % 'mean'
-   string += '%s \t' % 'sigma'
-   string += '%s \n' % 'max'
+   string += '%10s \t' % 'class'
+   string += '%10s \t' % 'flops'
+   string += '%10s \t' % 'in_channels'
+   string += '%10s \t' % 'out_channels'
+   string += '%12s '   % 'kernel_size' + '\t' * len(kernel_sizes[0])
+   string += '%10s \t' % 'padding'
+   string += '%10s \t' % 'stride'
+   string += '%10s \t' % 'bias'
+   string += '%10s \t' % 'batch_size'
+   string += '%12s '   % 'image_size' + '\t' * len(image_sizes[0])
+   string += '%10s \t' % 'precision'
+   string += '%10s \t' % 'min'
+   string += '%10s \t' % 'mean'
+   string += '%10s \t' % 'sigma'
+   string += '%10s \n' % 'max'
    sys.stderr.write(string)
 
-   for kernel_size in kernel_sizes:
+   data = []
+
+   for batch_size in batch_sizes:
       for in_channel in in_channels:
          for out_channel in out_channels:
             for image_size in image_sizes:
-               for batch_size in batch_sizes:
-                  time_cnn_layer(in_channels=in_channel,
-                                 out_channels=out_channel,
-                                 kernel_size=kernel_size,
-                                 batch_size=batch_size,
-                                 image_size=image_size)
+               for kernel_size in kernel_sizes:
+                  test_data = time_cnn_layer(in_channels=in_channel,
+                                             out_channels=out_channel,
+                                             kernel_size=kernel_size,
+                                             batch_size=batch_size,
+                                             image_size=image_size)
+                  data.append(test_data)
+
+                  json.dump(data,open(args.output_filename,'w'))
+
 
    #time_cnn_layer()
    #min,mean,sigma,max,pred = timer(layer,100,inputs)
@@ -104,17 +114,38 @@ def time_cnn_layer(layer_class=torch.nn.Conv2d ,in_channels=3,out_channels=16,ke
       getattr(layer,precision)()
    inputs = torch.randn((batch_size,in_channels) + image_size,dtype=getattr(torch,precision))
 
+   flops,params = get_model_complexity_info(layer,tuple(inputs.shape[1:]),print_per_layer_stat=False,as_strings=False)
+
    min,mean,sigma,max,pred = timer(layer,timed_tests,inputs)
+
+   test_data = {
+      'class':layer_class.__name__,
+      'flops':flops,
+      'in_channels':in_channels,
+      'out_channels':out_channels,
+      'kernel_size':kernel_size,
+      'padding':padding,
+      'stride':stride,
+      'bias':bias,
+      'batch_size':batch_size,
+      'image_size':image_size,
+      'precision':precision,
+      'min':min,
+      'mean':mean,
+      'sigma':sigma,
+      'max':max,
+   }
 
    string = ''
    string += '%10s\t' % layer_class.__name__
-   string += '%4d\t' % in_channels
-   string += '%4d\t' % out_channels
-   string += ''.join('%4d\t' % x for x in kernel_size)
-   string += '%4d\t' % padding
-   string += '%4d\t' % stride
-   string += '%4d\t' % bias
-   string += '%4d\t' % batch_size
+   string += '%10d\t' % flops
+   string += '%10d\t' % in_channels
+   string += '%10d\t' % out_channels
+   string += ''.join('%6d\t' % x for x in kernel_size)
+   string += '%10d\t' % padding
+   string += '%10d\t' % stride
+   string += '%10d\t' % bias
+   string += '%10d\t' % batch_size
    string += ''.join('%6d\t' % x for x in image_size)
    string += '%10s\t' % precision
    string += '%10.6f\t' % min
@@ -125,6 +156,7 @@ def time_cnn_layer(layer_class=torch.nn.Conv2d ,in_channels=3,out_channels=16,ke
    sys.stderr.flush()
    #logger.info('%s: min = %6.3f  mean = %6.3f +/- %6.3f  max = %6.3f',layer_class.__name__,min,mean,sigma,max)
 
+   return test_data
 
 
 
