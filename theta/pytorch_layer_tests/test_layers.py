@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse,logging,time,sys,json
+import argparse,logging,time,sys,json,os
 logger = logging.getLogger(__name__)
 import torch
 import pandas as pd
@@ -51,6 +51,8 @@ def main():
    # targets = torch.randn((batch_size,out_channels) + image_size,dtype=torch.float32)
    # targets = torch.abs(targets)
 
+
+
    kernel_sizes = [(2,2),(3,3),(4,4),(5,5)]
    in_channels = [1,3,4,8,16,32,64,128,256,512,1024]
    out_channels = in_channels.copy()
@@ -75,13 +77,31 @@ def main():
    string += '%10s \n' % 'max'
    sys.stderr.write(string)
 
-   data = []
+   if os.path.exists(args.output_filename):
+      data = json.load(open(args.output_filename))
+      logger.info('found data with %s entries',len(data))
+   else:
+      data = []
 
    for batch_size in batch_sizes:
       for in_channel in in_channels:
          for out_channel in out_channels:
             for image_size in image_sizes:
                for kernel_size in kernel_sizes:
+
+                  done_already = False
+                  for entry in data:
+                     if (entry['batch_size']    == batch_size and
+                         entry['in_channels']   == in_channel and
+                         entry['out_channels']  == out_channel and
+                         tuple(entry['image_size'])    == image_size and
+                         tuple(entry['kernel_size'])   == kernel_size):
+                        done_already = True
+                        break
+
+                  if done_already:
+                     break
+
                   test_data = time_cnn_layer(in_channels=in_channel,
                                              out_channels=out_channel,
                                              kernel_size=kernel_size,
