@@ -17,6 +17,9 @@ NTIMEITS=10
 NREPEATS=10
 
 echo [$SECONDS] using type $TYPE
+module swap cray-mpich cray-mpich-abi
+export SINGULARITYENV_LD_LIBRARY_PATH=/opt/cray/wlm_detect/default/lib64/:$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH
+
 
 echo [$SECONDS] run timeit $NTIMEITS times and repeat $NREPEATS times
 
@@ -27,23 +30,9 @@ do
    TOTAL_RANKS=$(( $NODES * $TMP_RPN ))
    echo [$SECONDS] running with $TOTAL_RANKS = $NODES x $TMP_RPN
 
-   module swap cray-mpich cray-mpich-abi
-
-   export SINGULARITYENV_LD_LIBRARY_PATH=/opt/cray/wlm_detect/default/lib64/:$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH
-
-   echo [$SECONDS] start test in container: $CONTAINER
+      echo [$SECONDS] start test in container: $CONTAINER
    aprun -n $TOTAL_RANKS -N $TMP_RPN singularity exec -B /opt -B /etc/alternatives $CONTAINER python3.6 /tests/measure_meta_data_ops.py -p /tests/datafiles --ntimeits $NTIMEITS --nrepeats $NREPEATS
-   
-   unset SINGULARITYENV_LD_LIBRARY_PATH
-   module swap cray-mpich-abi cray-mpich
 
-   module load miniconda-3.6/conda-4.5.12
-
-   echo [$SECONDS] starting test on filesystem
-   aprun -n $TOTAL_RANKS -N $TMP_RPN \
-       $EXEC -p $DIR --ntimeits $NTIMEITS --nrepeats $NREPEATS
-
-   module unload miniconda-3.6/conda-4.5.12
    echo [$SECONDS] done with TMP_RPN=$TMP_RPN
 done
 

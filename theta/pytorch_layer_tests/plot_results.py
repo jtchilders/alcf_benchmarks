@@ -72,9 +72,11 @@ def main():
    ax.append(fig.add_subplot(2,2,1))
    ax.append(fig.add_subplot(2,2,2))
    ax.append(fig.add_subplot(2,2,3))
-   ax.append(fig.add_subplot(2,2,4,projection='3d'))
+   ax.append(fig.add_subplot(2,2,4))
 
-   logger.info(data[['image_size_x','min']])
+   # ax.append(fig.add_subplot(2,2,4,projection='3d'))
+
+   # logger.info(data[['image_size_x','min']])
 
    # for entry in data['kernel_size_x'].unique():
    #    subset = data[data['kernel_size_x'] == entry]
@@ -86,22 +88,33 @@ def main():
    data.plot.scatter(x='kernel_size_x',y='min',ax=ax[1],c='image_size_y',cmap='Spectral_r')
    ax[2].set_yscale('log')
    data.plot.scatter(x='out_channels',y='min',ax=ax[2],c='image_size_y',cmap='Spectral_r')
+   ax[3].set_yscale('log')
+   data.plot.scatter(x='batch_size',y='min',ax=ax[3],c='image_size_y',cmap='Spectral_r')
+   
+   
+   # plt.Axes.set_xla
+   
+   # ax[3].set_zscale('log')
+   
+
+   plt.savefig('plotA.png')
+   plt.show()
+
+   figB = plt.figure(figsize=(10,8),dpi=80)
+   ax = figB.add_subplot(1,1,1,projection='3d')
    
    start = np.min(data['kernel_size_x'].unique())
    for entry in data['kernel_size_x'].unique():
       subset = data[data['kernel_size_x'] == entry]
-      z = np.log(subset[['flops']])
-      ax[3].scatter(subset[['out_channels']],subset[['image_size_x']],z,
+      z = np.log(subset[['min']])
+      ax.scatter(subset[['out_channels']],subset[['image_size_x']],z,
                     marker=markers[entry-start],c=colors[entry-start])
-   # plt.Axes.set_xla
-   ax[3].set_xlabel('out_channels')
-   ax[3].set_ylabel('image_size_x')
-   ax[3].set_zlabel('flops')
-   # ax[3].set_zscale('log')
    
+   ax.set_xlabel('out_channels')
+   ax.set_ylabel('image_size_x')
+   ax.set_zlabel('flops')
 
-   plt.savefig('plot.png')
-
+   plt.savefig('plotB.png')
    plt.show()
 
 

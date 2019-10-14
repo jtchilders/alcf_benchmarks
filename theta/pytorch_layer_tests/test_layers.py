@@ -45,6 +45,7 @@ def main():
    
    # parse the rank into the output filename
    output_filename = args.output_filename % rank
+   logger.info('rank %s of %s',rank,nranks)
    logger.info('input filename:  %s',args.input_filename)
    logger.info('output filename: %s',output_filename)
    
@@ -60,12 +61,13 @@ def main():
 
    for i in range(rank,len(combinations),nranks):
       combination = combinations[i]
-      logger.info('running %s',combination)
+      logger.info('running %d  %s',i,combination)
       test_data = time_cnn_layer(in_channels=combination['in_channels'],
                                  out_channels=combination['out_channels'],
                                  kernel_size=combination['kernel_size'],
                                  batch_size=combination['batch_size'],
                                  image_size=combination['image_size'])
+      logger.info('finished %d %s',i,test_data)
       new_data.append(test_data)
 
       json.dump(new_data,open(output_filename,'w'))
@@ -98,6 +100,7 @@ def get_combo_list():
 def get_header(kernel_dim,image_dim):
    string = ''
    string += '%10s \t' % 'class'
+   string += '%10s \t' % 'paramaeters'
    string += '%10s \t' % 'flops'
    string += '%10s \t' % 'in_channels'
    string += '%10s \t' % 'out_channels'
@@ -143,11 +146,11 @@ def remove_duplicates(data,combinations):
                         break
       if not dupe:
          deduped.append(combination)
-   print(counter)
+   #print(counter)
    return deduped
 
 
-def time_cnn_layer(layer_class=torch.nn.Conv2d,in_channels=3,out_channels=16,kernel_size=(3,3),padding=1,stride=1,bias=False,batch_size=100,timed_tests=100,image_size=(128,128),precision='float32'):
+def time_cnn_layer(layer_class=torch.nn.Conv2d,in_channels=3,out_channels=16,kernel_size=(3,3),padding=1,stride=1,bias=False,batch_size=100,timed_tests=10,image_size=(128,128),precision='float32'):
 
    layer = layer_class(in_channels,out_channels,kernel_size,stride=stride,bias=bias)
    if hasattr(layer,precision):
@@ -158,8 +161,13 @@ def time_cnn_layer(layer_class=torch.nn.Conv2d,in_channels=3,out_channels=16,ker
 
    min,mean,sigma,max,pred = timer(layer,timed_tests,inputs)
 
+   pars = sum(p.numel() for p in layer.parameters())
+
+   assert(pars == params)
+
    test_data = {
       'class':layer_class.__name__,
+      'parameters':pars,
       'flops':flops,
       'in_channels':in_channels,
       'out_channels':out_channels,
@@ -178,6 +186,7 @@ def time_cnn_layer(layer_class=torch.nn.Conv2d,in_channels=3,out_channels=16,ker
 
    # string = ''
    # string += '%10s\t' % layer_class.__name__
+   # string += '%10s\t' % pars
    # string += '%10d\t' % flops
    # string += '%10d\t' % in_channels
    # string += '%10d\t' % out_channels

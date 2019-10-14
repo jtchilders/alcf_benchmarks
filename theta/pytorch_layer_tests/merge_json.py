@@ -38,7 +38,7 @@ def main():
    for filename in fl:
       tmp = json.load(open(filename))
       data += tmp
-
+   logger.info('output contains %s entries',len(data))
    json.dump(data,open(args.output,'w'))
 
 
