@@ -25,7 +25,7 @@ export TAU_CALLPATH=1
 
 export OMP_NUM_THREADS=8
 export KMP_BLOCKTIME=0
-export KMP_AFFINITY=“granularity=fine,compact,1,0
+export KMP_AFFINITY=granularity=fine,compact,1,0
 echo [$SECONDS] OMP_NUM_THREADS=$OMP_NUM_THREADS
 export MKL_VERBOSE=1
 export MKLDNN_VERBOSE=1

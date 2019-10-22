@@ -6,12 +6,13 @@
 #COBALT --jobname pytorch_layer_prof
 
 export LD_PRELOAD=
-
-module load miniconda-3
-module swap intel intel/19.0.3.199 # intel/19.0.5.274 
 module unload darshan
-#module swap  PrgEnv-intel PrgEnv-gnu
+module swap intel/18.0.0.128 intel/19.0.3.199
+#module load datascience/pytorch-1.1
+module load miniconda-3
+module list
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/soft/compilers/intel/19.0.3.199/advisor_2019.3.0.591490/lib64
 
 export OMP_NUM_THREADS=8
 export KMP_BLOCKTIME=0
