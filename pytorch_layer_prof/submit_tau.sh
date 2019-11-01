@@ -17,6 +17,7 @@ export PATH=/projects/datascience/parton/profilers/tau-2.28.2/install/craycnl/bi
 
 # Generate callpath profiles
 export TAU_CALLPATH=1
+export TAU_CALLPATH_DEPTH=10
 
 # Generate Trace View
 #unset TAU_CALLPATH 
@@ -30,6 +31,6 @@ echo [$SECONDS] OMP_NUM_THREADS=$OMP_NUM_THREADS
 export MKL_VERBOSE=1
 export MKLDNN_VERBOSE=1
 echo [$SECONDS] start $(date)
-aprun -n 1 -N 1 tau_python -T openmp,ompt,python -ebs $HOME/git/alcf_benchmarks/pytorch_layer_prof/profile_layer.py -n 200
+aprun -n 1 -N 1 -d 1 -j 1 tau_python -T openmp,ompt,python -ebs $HOME/git/alcf_benchmarks/pytorch_layer_prof/profile_layer.py -n 200 
 echo [$SECONDS] done $(date)
 #aprun -n 1 -N 1 python /projects/datascience/parton/git/pointnet_toy/run_pointnet.py -c /projects/datascience/parton/git/pointnet_toy/pointnet_semseg.json
