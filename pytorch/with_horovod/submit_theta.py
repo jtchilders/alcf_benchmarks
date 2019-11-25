@@ -8,5 +8,9 @@
 
 module load miniconda-3/2019-11
 
-aprun -n $COBALT_PARTSIZE -N 2 python import_test.py
+NODES=$COBALT_PARTSIZE
+RANKS_PER_NODE=2
+TOTAL_RANKS=$(( $NODES * $RANKS_PER_NODE ))
+
+aprun -n $TOTAL_RANKS -N $RANKS_PER_NODE python import_test.py
 
